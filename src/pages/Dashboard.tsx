@@ -1,16 +1,24 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Handle tile click
   const handleTileClick = (optionName: string) => {
     setSelectedOption(optionName);
     toast.info(`Selected: ${optionName}`);
-    // In a real app, we would navigate to the respective page
-    console.log(`Navigate to ${optionName}`);
+    
+    // Navigate to the appropriate page
+    if (optionName === "Create Matrix") {
+      navigate("/create-matrix");
+    } else {
+      // For other options, just log for now
+      console.log(`Navigate to ${optionName}`);
+    }
   };
 
   return (
