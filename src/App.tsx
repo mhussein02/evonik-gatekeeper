@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import CreateMatrix from "./pages/CreateMatrix";
+import MaintainAuthorizations from "./pages/MaintainAuthorizations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-matrix" element={<CreateMatrix />} />
+          <Route path="/maintain-authorizations" element={<MaintainAuthorizations />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

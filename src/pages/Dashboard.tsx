@@ -15,6 +15,8 @@ const Dashboard = () => {
     // Navigate to the appropriate page
     if (optionName === "Create Matrix") {
       navigate("/create-matrix");
+    } else if (optionName === "Maintain Authorizations") {
+      navigate("/maintain-authorizations");
     } else {
       // For other options, just log for now
       console.log(`Navigate to ${optionName}`);
