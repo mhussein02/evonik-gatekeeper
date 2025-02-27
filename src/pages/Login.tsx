@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
 
 // Mock user data
 const users = [
@@ -23,6 +24,7 @@ const users = [
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,13 +40,13 @@ const Login = () => {
       );
 
       if (user) {
-        // Store user info in localStorage for persistence
-        localStorage.setItem("user", JSON.stringify({
+        // Use the login function from AuthContext
+        login({
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role
-        }));
+        });
         
         toast.success(`Welcome back, ${user.name}!`);
         navigate("/dashboard");
