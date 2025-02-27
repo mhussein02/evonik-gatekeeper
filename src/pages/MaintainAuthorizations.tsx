@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Edit2, Trash2, Plus } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 // Mock data for initial users
 const initialUsers = [
@@ -18,6 +19,7 @@ const roles = ["matrix_admin", "data_admin", "role_admin"];
 
 const MaintainAuthorizations = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [users, setUsers] = useState(initialUsers);
   const [editingUser, setEditingUser] = useState<number | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -75,6 +77,12 @@ const MaintainAuthorizations = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="mb-6">
+            <p className="text-evonik-600">
+              Welcome, <span className="font-bold">{user?.name}</span>. As an admin, you can manage user roles and permissions.
+            </p>
+          </div>
+          
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-evonik-600">User Management</h2>
             <button
