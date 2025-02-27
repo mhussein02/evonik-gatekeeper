@@ -57,91 +57,121 @@ const getAffinityValue = (chemicalId: number, metalId: number) => {
   return Math.floor(Math.random() * 5) + 1;
 };
 
-type CellSelection = {
-  chemicalId: number | null;
-  metalId: number | null;
-};
-
 const CreateMatrix = () => {
   const navigate = useNavigate();
-  const [matrix, setMatrix] = useState<Array<Array<CellSelection>>>(() => {
-    const initialMatrix = [];
-    for (let i = 0; i < 20; i++) {
-      const row = [];
-      for (let j = 0; j < 20; j++) {
-        row.push({ chemicalId: null, metalId: null });
-      }
-      initialMatrix.push(row);
-    }
-    return initialMatrix;
-  });
-
+  const [selectedChemicals, setSelectedChemicals] = useState<Array<number | null>>(Array(20).fill(null));
+  const [selectedMetals, setSelectedMetals] = useState<Array<number | null>>(Array(20).fill(null));
   const [affinityMatrix, setAffinityMatrix] = useState<Array<Array<number | null>>>(
-    Array(20).fill(Array(20).fill(null))
+    Array(20).fill(null).map(() => Array(20).fill(null))
   );
 
-  const handleCellChemicalChange = (rowIndex: number, colIndex: number, chemicalId: number) => {
-    const newMatrix = [...matrix];
-    newMatrix[rowIndex][colIndex] = {
-      ...newMatrix[rowIndex][colIndex],
-      chemicalId: chemicalId,
-    };
-    setMatrix(newMatrix);
+  const handleChemicalChange = (index: number, chemicalId: number | null) => {
+    const newSelectedChemicals = [...selectedChemicals];
+    newSelectedChemicals[index] = chemicalId;
+    setSelectedChemicals(newSelectedChemicals);
+    
+    // Update affinity values for this row
+    if (chemicalId !== null) {
+      updateAffinityValues(index, chemicalId, true);
+    } else {
+      // Clear affinity values for this row
+      const newAffinityMatrix = [...affinityMatrix];
+      for (let j = 0; j < 20; j++) {
+        newAffinityMatrix[index][j] = null;
+      }
+      setAffinityMatrix(newAffinityMatrix);
+    }
   };
 
-  const handleCellMetalChange = (rowIndex: number, colIndex: number, metalId: number) => {
-    const newMatrix = [...matrix];
-    newMatrix[rowIndex][colIndex] = {
-      ...newMatrix[rowIndex][colIndex],
-      metalId: metalId,
-    };
-    setMatrix(newMatrix);
+  const handleMetalChange = (index: number, metalId: number | null) => {
+    const newSelectedMetals = [...selectedMetals];
+    newSelectedMetals[index] = metalId;
+    setSelectedMetals(newSelectedMetals);
+    
+    // Update affinity values for this column
+    if (metalId !== null) {
+      updateAffinityValues(index, metalId, false);
+    } else {
+      // Clear affinity values for this column
+      const newAffinityMatrix = [...affinityMatrix];
+      for (let i = 0; i < 20; i++) {
+        newAffinityMatrix[i][index] = null;
+      }
+      setAffinityMatrix(newAffinityMatrix);
+    }
+  };
+
+  const updateAffinityValues = (index: number, id: number, isChemical: boolean) => {
+    const newAffinityMatrix = [...affinityMatrix];
+    
+    if (isChemical) {
+      // Update row
+      for (let j = 0; j < 20; j++) {
+        if (selectedMetals[j] !== null) {
+          newAffinityMatrix[index][j] = getAffinityValue(id, selectedMetals[j]!);
+        }
+      }
+    } else {
+      // Update column
+      for (let i = 0; i < 20; i++) {
+        if (selectedChemicals[i] !== null) {
+          newAffinityMatrix[i][index] = getAffinityValue(selectedChemicals[i]!, id);
+        }
+      }
+    }
+    
+    setAffinityMatrix(newAffinityMatrix);
   };
 
   const generateMatrix = () => {
-    // Check if all cells have selections
-    let isComplete = true;
-    const filledCells: { row: number; col: number }[] = [];
-
-    matrix.forEach((row, rowIndex) => {
-      row.forEach((cell, colIndex) => {
-        if (cell.chemicalId && cell.metalId) {
-          filledCells.push({ row: rowIndex, col: colIndex });
-        } else if (cell.chemicalId !== null || cell.metalId !== null) {
-          // If one selection is made but not both
-          isComplete = false;
+    let hasSelections = false;
+    
+    // Check if there are any selections
+    for (let i = 0; i < 20; i++) {
+      if (selectedChemicals[i] !== null) {
+        for (let j = 0; j < 20; j++) {
+          if (selectedMetals[j] !== null) {
+            hasSelections = true;
+            break;
+          }
         }
-      });
-    });
-
-    if (!isComplete && filledCells.length > 0) {
-      toast.warning("Some cells have incomplete selections (chemical or metal missing)");
-      return;
-    }
-
-    if (filledCells.length === 0) {
-      toast.error("Please select at least one chemical-metal pair");
-      return;
-    }
-
-    // Generate affinity values for selected pairs
-    const newAffinityMatrix = Array(20)
-      .fill(null)
-      .map(() => Array(20).fill(null));
-
-    filledCells.forEach(({ row, col }) => {
-      const cell = matrix[row][col];
-      if (cell.chemicalId !== null && cell.metalId !== null) {
-        newAffinityMatrix[row][col] = getAffinityValue(cell.chemicalId, cell.metalId);
+        if (hasSelections) break;
       }
-    });
-
+    }
+    
+    if (!hasSelections) {
+      toast.error("Please select at least one chemical and one metal");
+      return;
+    }
+    
+    // Generate affinity values for all selected pairs
+    const newAffinityMatrix = [...affinityMatrix];
+    for (let i = 0; i < 20; i++) {
+      for (let j = 0; j < 20; j++) {
+        if (selectedChemicals[i] !== null && selectedMetals[j] !== null) {
+          newAffinityMatrix[i][j] = getAffinityValue(selectedChemicals[i]!, selectedMetals[j]!);
+        }
+      }
+    }
+    
     setAffinityMatrix(newAffinityMatrix);
     toast.success("Matrix generated successfully!");
   };
 
   const goBack = () => {
     navigate("/dashboard");
+  };
+
+  const getChemicalName = (id: number | null) => {
+    if (id === null) return "";
+    const chemical = chemicalsData.find(c => c.id === id);
+    return chemical ? chemical.name : "";
+  };
+  
+  const getMetalName = (id: number | null) => {
+    if (id === null) return "";
+    const metal = metalsData.find(m => m.id === id);
+    return metal ? metal.name : "";
   };
 
   return (
@@ -159,73 +189,80 @@ const CreateMatrix = () => {
 
         <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
           <p className="text-evonik-600 mb-4">
-            Select chemical and metal pairs to generate affinity values. You can select up to 20x20 combinations.
+            Select chemicals from rows and metals from columns to generate affinity values at their intersections.
           </p>
 
           <div className="overflow-x-auto">
-            <div className="grid grid-cols-[auto_repeat(20,minmax(150px,1fr))] gap-1 mb-4">
-              {/* Top left empty cell */}
-              <div className="p-2 bg-evonik-200 font-bold text-evonik-700 min-w-[120px]"></div>
-
-              {/* Column headers (1-20) */}
-              {Array.from({ length: 20 }, (_, i) => (
-                <div key={`col-${i}`} className="p-2 bg-evonik-200 font-bold text-evonik-700 text-center">
-                  Column {i + 1}
-                </div>
-              ))}
-
-              {/* Matrix cells with dropdowns */}
-              {Array.from({ length: 20 }, (_, rowIndex) => (
-                <>
-                  {/* Row header */}
-                  <div key={`row-${rowIndex}`} className="p-2 bg-evonik-200 font-bold text-evonik-700 flex items-center">
-                    Row {rowIndex + 1}
-                  </div>
-
-                  {/* Row cells */}
-                  {Array.from({ length: 20 }, (_, colIndex) => (
-                    <div
-                      key={`cell-${rowIndex}-${colIndex}`}
-                      className="p-2 border border-evonik-200 bg-evonik-100"
-                    >
-                      <div className="flex flex-col space-y-2">
-                        <select
-                          value={matrix[rowIndex][colIndex].chemicalId || ""}
-                          onChange={(e) => handleCellChemicalChange(rowIndex, colIndex, Number(e.target.value))}
-                          className="w-full p-1 text-xs border border-evonik-300 rounded bg-white"
-                        >
-                          <option value="">Select Chemical</option>
-                          {chemicalsData.map((chemical) => (
-                            <option key={`chem-${chemical.id}`} value={chemical.id}>
-                              {chemical.name}
-                            </option>
-                          ))}
-                        </select>
-
-                        <select
-                          value={matrix[rowIndex][colIndex].metalId || ""}
-                          onChange={(e) => handleCellMetalChange(rowIndex, colIndex, Number(e.target.value))}
-                          className="w-full p-1 text-xs border border-evonik-300 rounded bg-white"
-                        >
-                          <option value="">Select Metal</option>
-                          {metalsData.map((metal) => (
-                            <option key={`metal-${metal.id}`} value={metal.id}>
-                              {metal.name}
-                            </option>
-                          ))}
-                        </select>
-
-                        {affinityMatrix[rowIndex][colIndex] !== null && (
-                          <div className="mt-2 p-1 bg-evonik-500 text-white text-center rounded font-bold">
-                            Affinity: {affinityMatrix[rowIndex][colIndex]}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+            <table className="min-w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="p-2 bg-evonik-200 font-bold text-evonik-700"></th>
+                  {Array.from({ length: 20 }, (_, i) => (
+                    <th key={`col-${i}`} className="p-2 bg-evonik-200 font-bold text-evonik-700 min-w-[150px]">
+                      <div className="text-center mb-2">Metal {i+1}</div>
+                      <select
+                        value={selectedMetals[i] || ""}
+                        onChange={(e) => handleMetalChange(i, e.target.value ? Number(e.target.value) : null)}
+                        className="w-full p-1 text-xs border border-evonik-300 rounded bg-white"
+                      >
+                        <option value="">Select Metal</option>
+                        {metalsData.map((metal) => (
+                          <option key={`metal-${metal.id}`} value={metal.id}>
+                            {metal.name}
+                          </option>
+                        ))}
+                      </select>
+                    </th>
                   ))}
-                </>
-              ))}
-            </div>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 20 }, (_, i) => (
+                  <tr key={`row-${i}`}>
+                    <td className="p-2 bg-evonik-200 font-bold text-evonik-700 min-w-[150px]">
+                      <div className="text-center mb-2">Chemical {i+1}</div>
+                      <select
+                        value={selectedChemicals[i] || ""}
+                        onChange={(e) => handleChemicalChange(i, e.target.value ? Number(e.target.value) : null)}
+                        className="w-full p-1 text-xs border border-evonik-300 rounded bg-white"
+                      >
+                        <option value="">Select Chemical</option>
+                        {chemicalsData.map((chemical) => (
+                          <option key={`chem-${chemical.id}`} value={chemical.id}>
+                            {chemical.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    
+                    {Array.from({ length: 20 }, (_, j) => (
+                      <td 
+                        key={`cell-${i}-${j}`} 
+                        className="p-2 border border-evonik-200 bg-evonik-100 text-center"
+                      >
+                        {selectedChemicals[i] !== null && selectedMetals[j] !== null ? (
+                          <div>
+                            {affinityMatrix[i][j] !== null ? (
+                              <div className="p-1 bg-evonik-500 text-white text-center rounded font-bold">
+                                {affinityMatrix[i][j]}
+                              </div>
+                            ) : (
+                              <div className="p-1 text-gray-400">-</div>
+                            )}
+                            <div className="mt-1 text-xs">
+                              <div className="font-semibold">{getChemicalName(selectedChemicals[i])}</div>
+                              <div className="font-semibold">{getMetalName(selectedMetals[j])}</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="p-1 text-gray-400">-</div>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           <div className="flex justify-center mt-6">
