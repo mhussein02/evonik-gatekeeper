@@ -24,7 +24,7 @@ const Dashboard = () => {
       } else {
         toast.error("You don't have permission to access this page");
       }
-    } else if (optionName === "Edit Chemical-Metal Affinity Master Data") {
+    } else if (optionName === "Edit Chemical-Material Affinity Master Data") {
       if (isAdmin) {
         navigate("/edit-master-data");
       } else {
@@ -73,7 +73,7 @@ const Dashboard = () => {
           <div className="flex flex-col h-52 justify-between">
             <h2 className="text-2xl font-semibold mb-4">Create Matrix</h2>
             <p className="text-evonik-100 text-sm">
-              Build new chemical-metal affinity matrices for various applications 
+              Build new chemical-material affinity matrices for various applications 
               and specifications.
             </p>
             <div className="text-right mt-4">
@@ -102,7 +102,7 @@ const Dashboard = () => {
 
         {/* Edit Master Data */}
         <div 
-          onClick={() => handleTileClick("Edit Chemical-Metal Affinity Master Data")}
+          onClick={() => handleTileClick("Edit Chemical-Material Affinity Master Data")}
           className={`${
             isAdmin 
               ? "bg-evonik-400 text-evonik-700" 
@@ -112,12 +112,12 @@ const Dashboard = () => {
         >
           <div className="flex flex-col h-52 justify-between">
             <div className="flex justify-between">
-              <h2 className="text-2xl font-semibold mb-4">Edit Chemical-Metal Affinity Master Data</h2>
+              <h2 className="text-2xl font-semibold mb-4">Edit Chemical-Material Affinity Master Data</h2>
               {!isAdmin && <div className="bg-gray-500 text-white text-xs px-2 py-1 rounded">Admin Only</div>}
             </div>
             <p className={`${isAdmin ? "text-evonik-600" : "text-gray-500"} text-sm`}>
               Modify the underlying data relationships between chemical compounds 
-              and metallic elements.
+              and materials.
             </p>
             <div className="text-right mt-4">
               <span className={`${isAdmin ? "text-evonik-600" : "text-gray-500"} text-sm`}>

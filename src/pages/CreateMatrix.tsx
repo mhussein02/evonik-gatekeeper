@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -26,7 +27,7 @@ const chemicalsData = [
   { id: 20, name: "Tetrahydrofuran" },
 ];
 
-const metalsData = [
+const materialsData = [
   { id: 1, name: "Aluminum" },
   { id: 2, name: "Copper" },
   { id: 3, name: "Iron" },
@@ -49,21 +50,21 @@ const metalsData = [
   { id: 20, name: "Brass" },
 ];
 
-const getAffinityValue = (chemicalId: number, metalId: number) => {
+const getAffinityValue = (chemicalId: number, materialId: number) => {
   return Math.floor(Math.random() * 5) + 1;
 };
 
 const CreateMatrix = () => {
   const navigate = useNavigate();
   const [selectedChemicals, setSelectedChemicals] = useState<Array<number | null>>(Array(20).fill(null));
-  const [selectedMetals, setSelectedMetals] = useState<Array<number | null>>(Array(20).fill(null));
+  const [selectedMaterials, setSelectedMaterials] = useState<Array<number | null>>(Array(20).fill(null));
   const [affinityMatrix, setAffinityMatrix] = useState<Array<Array<number | null>>>(
     Array(20).fill(null).map(() => Array(20).fill(null))
   );
 
   const [chemicalSearchTerms, setChemicalSearchTerms] = useState<Array<string>>(Array(20).fill(""));
-  const [metalSearchTerms, setMetalSearchTerms] = useState<Array<string>>(Array(20).fill(""));
-  const [activeDropdown, setActiveDropdown] = useState<{type: "chemical" | "metal", index: number} | null>(null);
+  const [materialSearchTerms, setMaterialSearchTerms] = useState<Array<string>>(Array(20).fill(""));
+  const [activeDropdown, setActiveDropdown] = useState<{type: "chemical" | "material", index: number} | null>(null);
   const dropdownRefs = useRef<Array<HTMLDivElement | null>>(Array(40).fill(null));
 
   useEffect(() => {
@@ -101,13 +102,13 @@ const CreateMatrix = () => {
     }
   };
 
-  const handleMetalChange = (index: number, metalId: number | null) => {
-    const newSelectedMetals = [...selectedMetals];
-    newSelectedMetals[index] = metalId;
-    setSelectedMetals(newSelectedMetals);
+  const handleMaterialChange = (index: number, materialId: number | null) => {
+    const newSelectedMaterials = [...selectedMaterials];
+    newSelectedMaterials[index] = materialId;
+    setSelectedMaterials(newSelectedMaterials);
     
-    if (metalId !== null) {
-      updateAffinityValues(index, metalId, false);
+    if (materialId !== null) {
+      updateAffinityValues(index, materialId, false);
     } else {
       const newAffinityMatrix = [...affinityMatrix];
       for (let i = 0; i < 20; i++) {
@@ -122,8 +123,8 @@ const CreateMatrix = () => {
     
     if (isChemical) {
       for (let j = 0; j < 20; j++) {
-        if (selectedMetals[j] !== null) {
-          newAffinityMatrix[index][j] = getAffinityValue(id, selectedMetals[j]!);
+        if (selectedMaterials[j] !== null) {
+          newAffinityMatrix[index][j] = getAffinityValue(id, selectedMaterials[j]!);
         }
       }
     } else {
@@ -143,7 +144,7 @@ const CreateMatrix = () => {
     for (let i = 0; i < 20; i++) {
       if (selectedChemicals[i] !== null) {
         for (let j = 0; j < 20; j++) {
-          if (selectedMetals[j] !== null) {
+          if (selectedMaterials[j] !== null) {
             hasSelections = true;
             break;
           }
@@ -153,15 +154,15 @@ const CreateMatrix = () => {
     }
     
     if (!hasSelections) {
-      toast.error("Please select at least one chemical and one metal");
+      toast.error("Please select at least one chemical and one material");
       return;
     }
     
     const newAffinityMatrix = [...affinityMatrix];
     for (let i = 0; i < 20; i++) {
       for (let j = 0; j < 20; j++) {
-        if (selectedChemicals[i] !== null && selectedMetals[j] !== null) {
-          newAffinityMatrix[i][j] = getAffinityValue(selectedChemicals[i]!, selectedMetals[j]!);
+        if (selectedChemicals[i] !== null && selectedMaterials[j] !== null) {
+          newAffinityMatrix[i][j] = getAffinityValue(selectedChemicals[i]!, selectedMaterials[j]!);
         }
       }
     }
@@ -180,25 +181,25 @@ const CreateMatrix = () => {
     return chemical ? chemical.name : "";
   };
   
-  const getMetalName = (id: number | null) => {
+  const getMaterialName = (id: number | null) => {
     if (id === null) return "";
-    const metal = metalsData.find(m => m.id === id);
-    return metal ? metal.name : "";
+    const material = materialsData.find(m => m.id === id);
+    return material ? material.name : "";
   };
 
-  const handleSearchChange = (value: string, index: number, type: "chemical" | "metal") => {
+  const handleSearchChange = (value: string, index: number, type: "chemical" | "material") => {
     if (type === "chemical") {
       const newSearchTerms = [...chemicalSearchTerms];
       newSearchTerms[index] = value;
       setChemicalSearchTerms(newSearchTerms);
     } else {
-      const newSearchTerms = [...metalSearchTerms];
+      const newSearchTerms = [...materialSearchTerms];
       newSearchTerms[index] = value;
-      setMetalSearchTerms(newSearchTerms);
+      setMaterialSearchTerms(newSearchTerms);
     }
   };
 
-  const toggleDropdown = (index: number, type: "chemical" | "metal") => {
+  const toggleDropdown = (index: number, type: "chemical" | "material") => {
     if (activeDropdown && activeDropdown.index === index && activeDropdown.type === type) {
       setActiveDropdown(null);
     } else {
@@ -212,9 +213,9 @@ const CreateMatrix = () => {
     );
   };
 
-  const filteredMetals = (index: number) => {
-    return metalsData.filter(metal => 
-      metal.name.toLowerCase().includes(metalSearchTerms[index].toLowerCase())
+  const filteredMaterials = (index: number) => {
+    return materialsData.filter(material => 
+      material.name.toLowerCase().includes(materialSearchTerms[index].toLowerCase())
     );
   };
 
@@ -222,7 +223,7 @@ const CreateMatrix = () => {
     <div className="min-h-screen bg-gradient-to-b from-evonik-100 to-evonik-200 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-evonik-700">Create Chemical-Metal Affinity Matrix</h1>
+          <h1 className="text-3xl font-bold text-evonik-700">Create Chemical-Material Affinity Matrix</h1>
           <button
             onClick={goBack}
             className="px-4 py-2 bg-evonik-300 text-evonik-700 rounded-md hover:bg-evonik-400 transition-colors"
@@ -233,7 +234,7 @@ const CreateMatrix = () => {
 
         <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
           <p className="text-evonik-600 mb-4">
-            Select chemicals from rows and metals from columns to generate affinity values at their intersections.
+            Select chemicals from rows and materials from columns to generate affinity values at their intersections.
           </p>
 
           <div className="overflow-x-auto">
@@ -243,28 +244,28 @@ const CreateMatrix = () => {
                   <th className="p-2 bg-evonik-200 font-bold text-evonik-700"></th>
                   {Array.from({ length: 20 }, (_, i) => (
                     <th key={`col-${i}`} className="p-2 bg-evonik-200 font-bold text-evonik-700 min-w-[150px]">
-                      <div className="text-center mb-2">Metal {i+1}</div>
+                      <div className="text-center mb-2">Material {i+1}</div>
                       <div className="relative" ref={el => { dropdownRefs.current[i + 20] = el; }}>
                         <div 
-                          onClick={() => toggleDropdown(i, "metal")}
+                          onClick={() => toggleDropdown(i, "material")}
                           className="w-full p-1 text-xs border border-evonik-300 rounded bg-white flex justify-between items-center cursor-pointer"
                         >
                           <span className="truncate">
-                            {selectedMetals[i] ? getMetalName(selectedMetals[i]) : "Select Metal"}
+                            {selectedMaterials[i] ? getMaterialName(selectedMaterials[i]) : "Select Material"}
                           </span>
                           <span className="ml-1">▼</span>
                         </div>
                         
-                        {activeDropdown && activeDropdown.type === "metal" && activeDropdown.index === i && (
+                        {activeDropdown && activeDropdown.type === "material" && activeDropdown.index === i && (
                           <div className="absolute z-10 w-full mt-1 bg-white border border-evonik-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                             <div className="sticky top-0 bg-white p-2 border-b border-evonik-300">
                               <div className="relative">
                                 <input
                                   type="text"
-                                  value={metalSearchTerms[i]}
-                                  onChange={(e) => handleSearchChange(e.target.value, i, "metal")}
+                                  value={materialSearchTerms[i]}
+                                  onChange={(e) => handleSearchChange(e.target.value, i, "material")}
                                   className="w-full p-1 text-xs border border-evonik-300 rounded pl-7"
-                                  placeholder="Search metals..."
+                                  placeholder="Search materials..."
                                   autoFocus
                                 />
                                 <Search className="absolute left-1 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -274,26 +275,26 @@ const CreateMatrix = () => {
                               <div 
                                 className="p-2 hover:bg-evonik-100 cursor-pointer border-b border-evonik-200"
                                 onClick={() => {
-                                  handleMetalChange(i, null);
+                                  handleMaterialChange(i, null);
                                   setActiveDropdown(null);
                                 }}
                               >
                                 Clear selection
                               </div>
-                              {filteredMetals(i).map((metal) => (
+                              {filteredMaterials(i).map((material) => (
                                 <div 
-                                  key={metal.id} 
+                                  key={material.id} 
                                   className="p-2 hover:bg-evonik-100 cursor-pointer"
                                   onClick={() => {
-                                    handleMetalChange(i, metal.id);
+                                    handleMaterialChange(i, material.id);
                                     setActiveDropdown(null);
                                   }}
                                 >
-                                  {metal.name}
+                                  {material.name}
                                 </div>
                               ))}
-                              {filteredMetals(i).length === 0 && (
-                                <div className="p-2 text-gray-500 italic">No metals found</div>
+                              {filteredMaterials(i).length === 0 && (
+                                <div className="p-2 text-gray-500 italic">No materials found</div>
                               )}
                             </div>
                           </div>
@@ -370,7 +371,7 @@ const CreateMatrix = () => {
                         key={`cell-${i}-${j}`} 
                         className="p-2 border border-evonik-200 bg-evonik-100 text-center"
                       >
-                        {selectedChemicals[i] !== null && selectedMetals[j] !== null ? (
+                        {selectedChemicals[i] !== null && selectedMaterials[j] !== null ? (
                           <div>
                             {affinityMatrix[i][j] !== null ? (
                               <div className="p-1 bg-evonik-500 text-white text-center rounded font-bold">
@@ -381,7 +382,7 @@ const CreateMatrix = () => {
                             )}
                             <div className="mt-1 text-xs">
                               <div className="font-semibold">{getChemicalName(selectedChemicals[i])}</div>
-                              <div className="font-semibold">{getMetalName(selectedMetals[j])}</div>
+                              <div className="font-semibold">{getMaterialName(selectedMaterials[j])}</div>
                             </div>
                           </div>
                         ) : (

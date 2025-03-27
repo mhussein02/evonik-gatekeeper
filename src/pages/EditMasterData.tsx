@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +13,7 @@ const initialChemicals = [
   { id: 5, name: "Hydrochloric Acid", formula: "HCl" },
 ];
 
-const initialMetals = [
+const initialMaterials = [
   { id: 1, name: "Aluminum", symbol: "Al" },
   { id: 2, name: "Copper", symbol: "Cu" },
   { id: 3, name: "Iron", symbol: "Fe" },
@@ -26,18 +25,18 @@ const EditMasterData = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [chemicals, setChemicals] = useState(initialChemicals);
-  const [metals, setMetals] = useState(initialMetals);
+  const [materials, setMaterials] = useState(initialMaterials);
   const [activeTab, setActiveTab] = useState("chemicals");
   
   // Edit states
   const [editingChemicalId, setEditingChemicalId] = useState<number | null>(null);
-  const [editingMetalId, setEditingMetalId] = useState<number | null>(null);
+  const [editingMaterialId, setEditingMaterialId] = useState<number | null>(null);
   const [newChemical, setNewChemical] = useState({ name: "", formula: "" });
-  const [newMetal, setNewMetal] = useState({ name: "", symbol: "" });
+  const [newMaterial, setNewMaterial] = useState({ name: "", symbol: "" });
   const [editedChemical, setEditedChemical] = useState({ name: "", formula: "" });
-  const [editedMetal, setEditedMetal] = useState({ name: "", symbol: "" });
+  const [editedMaterial, setEditedMaterial] = useState({ name: "", symbol: "" });
   const [showAddChemical, setShowAddChemical] = useState(false);
-  const [showAddMetal, setShowAddMetal] = useState(false);
+  const [showAddMaterial, setShowAddMaterial] = useState(false);
 
   const goBack = () => {
     navigate("/dashboard");
@@ -83,51 +82,51 @@ const EditMasterData = () => {
     toast.success("Chemical added successfully");
   };
 
-  // Metal management
-  const handleEditMetal = (metal: typeof metals[0]) => {
-    setEditingMetalId(metal.id);
-    setEditedMetal({ name: metal.name, symbol: metal.symbol });
+  // Material management
+  const handleEditMaterial = (material: typeof materials[0]) => {
+    setEditingMaterialId(material.id);
+    setEditedMaterial({ name: material.name, symbol: material.symbol });
   };
 
-  const handleSaveMetalEdit = (id: number) => {
-    if (!editedMetal.name || !editedMetal.symbol) {
+  const handleSaveMaterialEdit = (id: number) => {
+    if (!editedMaterial.name || !editedMaterial.symbol) {
       toast.error("Name and symbol are required");
       return;
     }
     
-    const updatedMetals = metals.map(metal => 
-      metal.id === id ? { ...metal, ...editedMetal } : metal
+    const updatedMaterials = materials.map(material => 
+      material.id === id ? { ...material, ...editedMaterial } : material
     );
-    setMetals(updatedMetals);
-    setEditingMetalId(null);
-    toast.success("Metal updated successfully");
+    setMaterials(updatedMaterials);
+    setEditingMaterialId(null);
+    toast.success("Material updated successfully");
   };
 
-  const handleDeleteMetal = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this metal?")) {
-      setMetals(metals.filter(metal => metal.id !== id));
-      toast.success("Metal deleted successfully");
+  const handleDeleteMaterial = (id: number) => {
+    if (window.confirm("Are you sure you want to delete this material?")) {
+      setMaterials(materials.filter(material => material.id !== id));
+      toast.success("Material deleted successfully");
     }
   };
 
-  const handleAddMetal = () => {
-    if (!newMetal.name || !newMetal.symbol) {
+  const handleAddMaterial = () => {
+    if (!newMaterial.name || !newMaterial.symbol) {
       toast.error("Name and symbol are required");
       return;
     }
     
-    const newId = Math.max(...metals.map(m => m.id), 0) + 1;
-    setMetals([...metals, { id: newId, ...newMetal }]);
-    setNewMetal({ name: "", symbol: "" });
-    setShowAddMetal(false);
-    toast.success("Metal added successfully");
+    const newId = Math.max(...materials.map(m => m.id), 0) + 1;
+    setMaterials([...materials, { id: newId, ...newMaterial }]);
+    setNewMaterial({ name: "", symbol: "" });
+    setShowAddMaterial(false);
+    toast.success("Material added successfully");
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-evonik-100 to-evonik-200 p-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-evonik-700">Edit Chemical-Metal Affinity Master Data</h1>
+          <h1 className="text-3xl font-bold text-evonik-700">Edit Chemical-Material Affinity Master Data</h1>
           <button
             onClick={goBack}
             className="px-4 py-2 bg-evonik-300 text-evonik-700 rounded-md hover:bg-evonik-400 transition-colors"
@@ -139,7 +138,7 @@ const EditMasterData = () => {
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="mb-6">
             <p className="text-evonik-600">
-              Welcome, <span className="font-bold">{user?.name}</span>. As an admin, you can edit the chemical and metal master data.
+              Welcome, <span className="font-bold">{user?.name}</span>. As an admin, you can edit the chemical and material master data.
             </p>
           </div>
 
@@ -156,13 +155,13 @@ const EditMasterData = () => {
             </button>
             <button
               className={`py-2 px-4 font-medium ${
-                activeTab === "metals" 
+                activeTab === "materials" 
                   ? "border-b-2 border-evonik-600 text-evonik-700" 
                   : "text-evonik-400 hover:text-evonik-600"
               }`}
-              onClick={() => setActiveTab("metals")}
+              onClick={() => setActiveTab("materials")}
             >
-              Metals
+              Materials
             </button>
           </div>
 
@@ -290,48 +289,48 @@ const EditMasterData = () => {
             </div>
           )}
 
-          {/* Metals Tab */}
-          {activeTab === "metals" && (
+          {/* Materials Tab */}
+          {activeTab === "materials" && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-evonik-600">Metal List</h2>
+                <h2 className="text-xl font-semibold text-evonik-600">Material List</h2>
                 <button
-                  onClick={() => setShowAddMetal(true)}
+                  onClick={() => setShowAddMaterial(true)}
                   className="flex items-center gap-2 px-3 py-1 bg-evonik-600 text-white rounded-md hover:bg-evonik-700 transition-colors"
                 >
                   <Plus size={16} />
-                  Add Metal
+                  Add Material
                 </button>
               </div>
 
-              {showAddMetal && (
+              {showAddMaterial && (
                 <div className="mb-6 p-4 bg-evonik-100 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-4">Add New Metal</h3>
+                  <h3 className="text-lg font-semibold mb-4">Add New Material</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
                       type="text"
-                      placeholder="Metal Name"
-                      value={newMetal.name}
-                      onChange={(e) => setNewMetal({ ...newMetal, name: e.target.value })}
+                      placeholder="Material Name"
+                      value={newMaterial.name}
+                      onChange={(e) => setNewMaterial({ ...newMaterial, name: e.target.value })}
                       className="p-2 border border-evonik-300 rounded"
                     />
                     <input
                       type="text"
-                      placeholder="Metal Symbol"
-                      value={newMetal.symbol}
-                      onChange={(e) => setNewMetal({ ...newMetal, symbol: e.target.value })}
+                      placeholder="Material Symbol"
+                      value={newMaterial.symbol}
+                      onChange={(e) => setNewMaterial({ ...newMaterial, symbol: e.target.value })}
                       className="p-2 border border-evonik-300 rounded"
                     />
                   </div>
                   <div className="flex gap-2 mt-4">
                     <button
-                      onClick={handleAddMetal}
+                      onClick={handleAddMaterial}
                       className="px-4 py-2 bg-evonik-600 text-white rounded hover:bg-evonik-700"
                     >
-                      Add Metal
+                      Add Material
                     </button>
                     <button
-                      onClick={() => setShowAddMetal(false)}
+                      onClick={() => setShowAddMaterial(false)}
                       className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                     >
                       Cancel
@@ -351,38 +350,38 @@ const EditMasterData = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {metals.map(metal => (
-                      <tr key={metal.id} className="border-b border-evonik-200 hover:bg-evonik-100">
-                        <td className="px-4 py-3">{metal.id}</td>
+                    {materials.map(material => (
+                      <tr key={material.id} className="border-b border-evonik-200 hover:bg-evonik-100">
+                        <td className="px-4 py-3">{material.id}</td>
                         <td className="px-4 py-3">
-                          {editingMetalId === metal.id ? (
+                          {editingMaterialId === material.id ? (
                             <input
                               type="text"
-                              value={editedMetal.name}
-                              onChange={(e) => setEditedMetal({ ...editedMetal, name: e.target.value })}
+                              value={editedMaterial.name}
+                              onChange={(e) => setEditedMaterial({ ...editedMaterial, name: e.target.value })}
                               className="p-1 border border-evonik-300 rounded w-full"
                             />
                           ) : (
-                            metal.name
+                            material.name
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          {editingMetalId === metal.id ? (
+                          {editingMaterialId === material.id ? (
                             <input
                               type="text"
-                              value={editedMetal.symbol}
-                              onChange={(e) => setEditedMetal({ ...editedMetal, symbol: e.target.value })}
+                              value={editedMaterial.symbol}
+                              onChange={(e) => setEditedMaterial({ ...editedMaterial, symbol: e.target.value })}
                               className="p-1 border border-evonik-300 rounded w-full"
                             />
                           ) : (
-                            metal.symbol
+                            material.symbol
                           )}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-center gap-2">
-                            {editingMetalId === metal.id ? (
+                            {editingMaterialId === material.id ? (
                               <button
-                                onClick={() => handleSaveMetalEdit(metal.id)}
+                                onClick={() => handleSaveMaterialEdit(material.id)}
                                 className="p-1 text-green-600 hover:text-green-800"
                                 title="Save"
                               >
@@ -390,7 +389,7 @@ const EditMasterData = () => {
                               </button>
                             ) : (
                               <button
-                                onClick={() => handleEditMetal(metal)}
+                                onClick={() => handleEditMaterial(material)}
                                 className="p-1 text-blue-600 hover:text-blue-800"
                                 title="Edit"
                               >
@@ -398,7 +397,7 @@ const EditMasterData = () => {
                               </button>
                             )}
                             <button
-                              onClick={() => handleDeleteMetal(metal.id)}
+                              onClick={() => handleDeleteMaterial(material.id)}
                               className="p-1 text-red-600 hover:text-red-800"
                               title="Delete"
                             >
