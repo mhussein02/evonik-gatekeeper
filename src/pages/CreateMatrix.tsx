@@ -1,9 +1,8 @@
-
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Search } from "lucide-react";
 
-// Mock data for demonstration purposes
 const chemicalsData = [
   { id: 1, name: "Hydrogen Peroxide" },
   { id: 2, name: "Sulfuric Acid" },
@@ -50,10 +49,7 @@ const metalsData = [
   { id: 20, name: "Brass" },
 ];
 
-// Mock function to generate affinity values
 const getAffinityValue = (chemicalId: number, metalId: number) => {
-  // In a real application, this would come from a database
-  // For now, we'll generate a random value between 1-5
   return Math.floor(Math.random() * 5) + 1;
 };
 
@@ -65,16 +61,38 @@ const CreateMatrix = () => {
     Array(20).fill(null).map(() => Array(20).fill(null))
   );
 
+  const [chemicalSearchTerms, setChemicalSearchTerms] = useState<Array<string>>(Array(20).fill(""));
+  const [metalSearchTerms, setMetalSearchTerms] = useState<Array<string>>(Array(20).fill(""));
+  const [activeDropdown, setActiveDropdown] = useState<{type: "chemical" | "metal", index: number} | null>(null);
+  const dropdownRefs = useRef<Array<HTMLDivElement | null>>(Array(40).fill(null));
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (activeDropdown && 
+          dropdownRefs.current[activeDropdown.type === "chemical" 
+            ? activeDropdown.index 
+            : activeDropdown.index + 20] && 
+          !dropdownRefs.current[activeDropdown.type === "chemical" 
+            ? activeDropdown.index 
+            : activeDropdown.index + 20]?.contains(event.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeDropdown]);
+
   const handleChemicalChange = (index: number, chemicalId: number | null) => {
     const newSelectedChemicals = [...selectedChemicals];
     newSelectedChemicals[index] = chemicalId;
     setSelectedChemicals(newSelectedChemicals);
     
-    // Update affinity values for this row
     if (chemicalId !== null) {
       updateAffinityValues(index, chemicalId, true);
     } else {
-      // Clear affinity values for this row
       const newAffinityMatrix = [...affinityMatrix];
       for (let j = 0; j < 20; j++) {
         newAffinityMatrix[index][j] = null;
@@ -88,11 +106,9 @@ const CreateMatrix = () => {
     newSelectedMetals[index] = metalId;
     setSelectedMetals(newSelectedMetals);
     
-    // Update affinity values for this column
     if (metalId !== null) {
       updateAffinityValues(index, metalId, false);
     } else {
-      // Clear affinity values for this column
       const newAffinityMatrix = [...affinityMatrix];
       for (let i = 0; i < 20; i++) {
         newAffinityMatrix[i][index] = null;
@@ -105,14 +121,12 @@ const CreateMatrix = () => {
     const newAffinityMatrix = [...affinityMatrix];
     
     if (isChemical) {
-      // Update row
       for (let j = 0; j < 20; j++) {
         if (selectedMetals[j] !== null) {
           newAffinityMatrix[index][j] = getAffinityValue(id, selectedMetals[j]!);
         }
       }
     } else {
-      // Update column
       for (let i = 0; i < 20; i++) {
         if (selectedChemicals[i] !== null) {
           newAffinityMatrix[i][index] = getAffinityValue(selectedChemicals[i]!, id);
@@ -126,7 +140,6 @@ const CreateMatrix = () => {
   const generateMatrix = () => {
     let hasSelections = false;
     
-    // Check if there are any selections
     for (let i = 0; i < 20; i++) {
       if (selectedChemicals[i] !== null) {
         for (let j = 0; j < 20; j++) {
@@ -144,7 +157,6 @@ const CreateMatrix = () => {
       return;
     }
     
-    // Generate affinity values for all selected pairs
     const newAffinityMatrix = [...affinityMatrix];
     for (let i = 0; i < 20; i++) {
       for (let j = 0; j < 20; j++) {
@@ -174,6 +186,38 @@ const CreateMatrix = () => {
     return metal ? metal.name : "";
   };
 
+  const handleSearchChange = (value: string, index: number, type: "chemical" | "metal") => {
+    if (type === "chemical") {
+      const newSearchTerms = [...chemicalSearchTerms];
+      newSearchTerms[index] = value;
+      setChemicalSearchTerms(newSearchTerms);
+    } else {
+      const newSearchTerms = [...metalSearchTerms];
+      newSearchTerms[index] = value;
+      setMetalSearchTerms(newSearchTerms);
+    }
+  };
+
+  const toggleDropdown = (index: number, type: "chemical" | "metal") => {
+    if (activeDropdown && activeDropdown.index === index && activeDropdown.type === type) {
+      setActiveDropdown(null);
+    } else {
+      setActiveDropdown({ type, index });
+    }
+  };
+
+  const filteredChemicals = (index: number) => {
+    return chemicalsData.filter(chemical => 
+      chemical.name.toLowerCase().includes(chemicalSearchTerms[index].toLowerCase())
+    );
+  };
+
+  const filteredMetals = (index: number) => {
+    return metalsData.filter(metal => 
+      metal.name.toLowerCase().includes(metalSearchTerms[index].toLowerCase())
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-evonik-100 to-evonik-200 p-4">
       <div className="max-w-7xl mx-auto">
@@ -200,18 +244,61 @@ const CreateMatrix = () => {
                   {Array.from({ length: 20 }, (_, i) => (
                     <th key={`col-${i}`} className="p-2 bg-evonik-200 font-bold text-evonik-700 min-w-[150px]">
                       <div className="text-center mb-2">Metal {i+1}</div>
-                      <select
-                        value={selectedMetals[i] || ""}
-                        onChange={(e) => handleMetalChange(i, e.target.value ? Number(e.target.value) : null)}
-                        className="w-full p-1 text-xs border border-evonik-300 rounded bg-white"
-                      >
-                        <option value="">Select Metal</option>
-                        {metalsData.map((metal) => (
-                          <option key={`metal-${metal.id}`} value={metal.id}>
-                            {metal.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative" ref={el => { dropdownRefs.current[i + 20] = el; }}>
+                        <div 
+                          onClick={() => toggleDropdown(i, "metal")}
+                          className="w-full p-1 text-xs border border-evonik-300 rounded bg-white flex justify-between items-center cursor-pointer"
+                        >
+                          <span className="truncate">
+                            {selectedMetals[i] ? getMetalName(selectedMetals[i]) : "Select Metal"}
+                          </span>
+                          <span className="ml-1">▼</span>
+                        </div>
+                        
+                        {activeDropdown && activeDropdown.type === "metal" && activeDropdown.index === i && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-evonik-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                            <div className="sticky top-0 bg-white p-2 border-b border-evonik-300">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={metalSearchTerms[i]}
+                                  onChange={(e) => handleSearchChange(e.target.value, i, "metal")}
+                                  className="w-full p-1 text-xs border border-evonik-300 rounded pl-7"
+                                  placeholder="Search metals..."
+                                  autoFocus
+                                />
+                                <Search className="absolute left-1 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                              </div>
+                            </div>
+                            <div>
+                              <div 
+                                className="p-2 hover:bg-evonik-100 cursor-pointer border-b border-evonik-200"
+                                onClick={() => {
+                                  handleMetalChange(i, null);
+                                  setActiveDropdown(null);
+                                }}
+                              >
+                                Clear selection
+                              </div>
+                              {filteredMetals(i).map((metal) => (
+                                <div 
+                                  key={metal.id} 
+                                  className="p-2 hover:bg-evonik-100 cursor-pointer"
+                                  onClick={() => {
+                                    handleMetalChange(i, metal.id);
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  {metal.name}
+                                </div>
+                              ))}
+                              {filteredMetals(i).length === 0 && (
+                                <div className="p-2 text-gray-500 italic">No metals found</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </th>
                   ))}
                 </tr>
@@ -221,18 +308,61 @@ const CreateMatrix = () => {
                   <tr key={`row-${i}`}>
                     <td className="p-2 bg-evonik-200 font-bold text-evonik-700 min-w-[150px]">
                       <div className="text-center mb-2">Chemical {i+1}</div>
-                      <select
-                        value={selectedChemicals[i] || ""}
-                        onChange={(e) => handleChemicalChange(i, e.target.value ? Number(e.target.value) : null)}
-                        className="w-full p-1 text-xs border border-evonik-300 rounded bg-white"
-                      >
-                        <option value="">Select Chemical</option>
-                        {chemicalsData.map((chemical) => (
-                          <option key={`chem-${chemical.id}`} value={chemical.id}>
-                            {chemical.name}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative" ref={el => { dropdownRefs.current[i] = el; }}>
+                        <div 
+                          onClick={() => toggleDropdown(i, "chemical")}
+                          className="w-full p-1 text-xs border border-evonik-300 rounded bg-white flex justify-between items-center cursor-pointer"
+                        >
+                          <span className="truncate">
+                            {selectedChemicals[i] ? getChemicalName(selectedChemicals[i]) : "Select Chemical"}
+                          </span>
+                          <span className="ml-1">▼</span>
+                        </div>
+                        
+                        {activeDropdown && activeDropdown.type === "chemical" && activeDropdown.index === i && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-evonik-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                            <div className="sticky top-0 bg-white p-2 border-b border-evonik-300">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={chemicalSearchTerms[i]}
+                                  onChange={(e) => handleSearchChange(e.target.value, i, "chemical")}
+                                  className="w-full p-1 text-xs border border-evonik-300 rounded pl-7"
+                                  placeholder="Search chemicals..."
+                                  autoFocus
+                                />
+                                <Search className="absolute left-1 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                              </div>
+                            </div>
+                            <div>
+                              <div 
+                                className="p-2 hover:bg-evonik-100 cursor-pointer border-b border-evonik-200"
+                                onClick={() => {
+                                  handleChemicalChange(i, null);
+                                  setActiveDropdown(null);
+                                }}
+                              >
+                                Clear selection
+                              </div>
+                              {filteredChemicals(i).map((chemical) => (
+                                <div 
+                                  key={chemical.id} 
+                                  className="p-2 hover:bg-evonik-100 cursor-pointer"
+                                  onClick={() => {
+                                    handleChemicalChange(i, chemical.id);
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  {chemical.name}
+                                </div>
+                              ))}
+                              {filteredChemicals(i).length === 0 && (
+                                <div className="p-2 text-gray-500 italic">No chemicals found</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </td>
                     
                     {Array.from({ length: 20 }, (_, j) => (
