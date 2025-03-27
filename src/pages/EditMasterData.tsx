@@ -1,8 +1,10 @@
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Edit2, Trash2, Plus, Save } from "lucide-react";
+import CSVUploader from "../components/CSVUploader";
 
 // Mock initial data
 const initialChemicals = [
@@ -122,6 +124,29 @@ const EditMasterData = () => {
     toast.success("Material added successfully");
   };
 
+  // CSV Import handlers
+  const handleChemicalsImport = (importedChemicals: any[]) => {
+    // Generate new IDs to avoid conflicts
+    const highestId = Math.max(...chemicals.map(c => c.id), 0);
+    const newChemicals = importedChemicals.map((chemical, index) => ({
+      ...chemical,
+      id: highestId + index + 1
+    }));
+    
+    setChemicals([...chemicals, ...newChemicals]);
+  };
+
+  const handleMaterialsImport = (importedMaterials: any[]) => {
+    // Generate new IDs to avoid conflicts
+    const highestId = Math.max(...materials.map(m => m.id), 0);
+    const newMaterials = importedMaterials.map((material, index) => ({
+      ...material,
+      id: highestId + index + 1
+    }));
+    
+    setMaterials([...materials, ...newMaterials]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-evonik-100 to-evonik-200 p-4">
       <div className="max-w-6xl mx-auto">
@@ -168,15 +193,18 @@ const EditMasterData = () => {
           {/* Chemicals Tab */}
           {activeTab === "chemicals" && (
             <div>
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <h2 className="text-xl font-semibold text-evonik-600">Chemical List</h2>
-                <button
-                  onClick={() => setShowAddChemical(true)}
-                  className="flex items-center gap-2 px-3 py-1 bg-evonik-600 text-white rounded-md hover:bg-evonik-700 transition-colors"
-                >
-                  <Plus size={16} />
-                  Add Chemical
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <CSVUploader type="chemical" onDataImported={handleChemicalsImport} />
+                  <button
+                    onClick={() => setShowAddChemical(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-evonik-600 text-white rounded-md hover:bg-evonik-700 transition-colors"
+                  >
+                    <Plus size={16} />
+                    Add Chemical
+                  </button>
+                </div>
               </div>
 
               {showAddChemical && (
@@ -292,15 +320,18 @@ const EditMasterData = () => {
           {/* Materials Tab */}
           {activeTab === "materials" && (
             <div>
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <h2 className="text-xl font-semibold text-evonik-600">Material List</h2>
-                <button
-                  onClick={() => setShowAddMaterial(true)}
-                  className="flex items-center gap-2 px-3 py-1 bg-evonik-600 text-white rounded-md hover:bg-evonik-700 transition-colors"
-                >
-                  <Plus size={16} />
-                  Add Material
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <CSVUploader type="material" onDataImported={handleMaterialsImport} />
+                  <button
+                    onClick={() => setShowAddMaterial(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-evonik-600 text-white rounded-md hover:bg-evonik-700 transition-colors"
+                  >
+                    <Plus size={16} />
+                    Add Material
+                  </button>
+                </div>
               </div>
 
               {showAddMaterial && (
