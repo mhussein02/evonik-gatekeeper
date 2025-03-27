@@ -18,6 +18,8 @@ const Dashboard = () => {
     // Navigate to the appropriate page
     if (optionName === "Create Matrix") {
       navigate("/create-matrix");
+    } else if (optionName === "View User Created Matrix") {
+      navigate("/view-user-matrix");
     } else if (optionName === "Maintain Authorizations") {
       if (isAdmin) {
         navigate("/maintain-authorizations");

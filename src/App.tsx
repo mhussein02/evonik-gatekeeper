@@ -12,6 +12,7 @@ import CreateMatrix from "./pages/CreateMatrix";
 import MaintainAuthorizations from "./pages/MaintainAuthorizations";
 import NotFound from "./pages/NotFound";
 import EditMasterData from "./pages/EditMasterData";
+import ViewUserMatrix from "./pages/ViewUserMatrix";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/create-matrix" element={<CreateMatrix />} />
+              <Route path="/view-user-matrix" element={<ViewUserMatrix />} />
             </Route>
             
             {/* Admin-only routes */}
