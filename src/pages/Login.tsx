@@ -1,26 +1,8 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
-
-// Mock user data
-const users = [
-  { 
-    id: 1, 
-    name: "John Doe", 
-    email: "john.doe@evonik.com", 
-    password: "password", 
-    role: "matrix_admin" 
-  },
-  { 
-    id: 2, 
-    name: "Jane Smith", 
-    email: "jane.smith@evonik.com", 
-    password: "password123", 
-    role: "data_admin" 
-  }
-];
+import { api } from "../lib/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -29,32 +11,25 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API call delay
-    setTimeout(() => {
-      const user = users.find(
-        (u) => u.email === email && u.password === password
-      );
-
-      if (user) {
-        // Use the login function from AuthContext
-        login({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        });
-        
-        toast.success(`Welcome back, ${user.name}!`);
-        navigate("/dashboard");
-      } else {
-        toast.error("Invalid email or password");
-      }
+    try {
+      console.log('Attempting login with:', { email });
+      const response = await api.login(email, password);
+      console.log('Login response:', response);
+      
+      login(response.user);
+      localStorage.setItem('token', response.token);
+      toast.success(`Welcome back, ${response.user.name}!`);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error(error instanceof Error ? error.message : "Login failed");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

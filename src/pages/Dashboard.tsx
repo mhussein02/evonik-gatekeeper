@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { LogOut } from "lucide-react";
+import { LogOut, Key } from "lucide-react";
 
 const Dashboard = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -55,13 +54,22 @@ const Dashboard = () => {
             Welcome, <span className="font-bold">{user?.name}</span>
             <div className="text-sm text-evonik-600">Role: {user?.role}</div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-evonik-300 text-evonik-700 rounded-md hover:bg-evonik-400 transition-colors"
-          >
-            <LogOut size={18} />
-            Logout
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate("/change-password")}
+              className="flex items-center gap-2 px-4 py-2 bg-evonik-400 text-evonik-700 rounded-md hover:bg-evonik-500 transition-colors"
+            >
+              <Key size={18} />
+              Change Password
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-evonik-300 text-evonik-700 rounded-md hover:bg-evonik-400 transition-colors"
+            >
+              <LogOut size={18} />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,7 @@ import MaintainAuthorizations from "./pages/MaintainAuthorizations";
 import NotFound from "./pages/NotFound";
 import EditMasterData from "./pages/EditMasterData";
 import ViewUserMatrix from "./pages/ViewUserMatrix";
+import ChangePassword from "./pages/ChangePassword";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +32,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/create-matrix" element={<CreateMatrix />} />
               <Route path="/view-user-matrix" element={<ViewUserMatrix />} />
+              <Route path="/change-password" element={<ChangePassword />} />
             </Route>
             
             {/* Admin-only routes */}

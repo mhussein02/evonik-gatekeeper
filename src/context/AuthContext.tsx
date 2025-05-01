@@ -1,12 +1,5 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-};
+import { api, User } from "../lib/api";
 
 type AuthContextType = {
   user: User | null;
@@ -23,9 +16,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for user in localStorage
+    // Check for user and token in localStorage
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    const token = localStorage.getItem("token");
+    
+    if (storedUser && token) {
       setUser(JSON.parse(storedUser));
     }
     setIsLoading(false);
@@ -36,9 +31,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        await api.logout(token);
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    }
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   const isAuthenticated = !!user;
